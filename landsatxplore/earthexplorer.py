@@ -84,7 +84,7 @@ class EarthExplorer(object):
         """Log out from Earth Explorer."""
         self.session.get(EE_LOGOUT_URL)
 
-    def _download(self, url, output_dir, timeout, chunk_size=1024, skip=False):
+    def _download(self, url, output_dir, timeout, chunk_size=1024, skip=False, verbose=True):
         """Download remote file given its URL."""
         # Check availability of the requested product
         # EarthExplorer should respond with JSON
@@ -103,7 +103,11 @@ class EarthExplorer(object):
             ) as r:
                 file_size = int(r.headers.get("Content-Length"))
                 with tqdm(
-                    total=file_size, unit_scale=True, unit="B", unit_divisor=1024
+                    total=file_size,
+                    unit_scale=True,
+                    unit="B",
+                    unit_divisor=1024,
+                    disable=(not verbose),
                 ) as pbar:
                     local_filename = r.headers["Content-Disposition"].split("=")[-1]
                     local_filename = local_filename.replace('"', "")
@@ -121,7 +125,7 @@ class EarthExplorer(object):
             )
         return local_filename
 
-    def download(self, identifier, output_dir, dataset=None, timeout=300, skip=False):
+    def download(self, identifier, output_dir, dataset=None, timeout=300, skip=False, verbose=True):
         """Download a Landsat scene.
 
         Parameters
@@ -152,5 +156,5 @@ class EarthExplorer(object):
         url = EE_DOWNLOAD_URL.format(
             data_product_id=DATA_PRODUCTS[dataset], entity_id=entity_id
         )
-        filename = self._download(url, output_dir, timeout=timeout, skip=skip)
+        filename = self._download(url, output_dir, timeout=timeout, skip=skip, verbose=verbose)
         return filename
